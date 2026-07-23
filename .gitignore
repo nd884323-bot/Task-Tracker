@@ -1,0 +1,107 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.production.local
+.env.development.local
+.env.test.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.code-workspace
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+coverage/
+.turbo/
+
+# Testing
+.nyc_output/
+*.lcov
+
+# OS
+Thumbs.db
+.AppleDouble
+.LSOverride
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+postgres_data/
+pgadmin_data/
+
+# Git
+.git/
+.gitkeep
+
+# Cache
+.eslintcache
+.next/cache/
+.vercel/
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Package manager lockfiles
+.pnpm-store/
+
+# Turborepo
+.turbo/
+
+# Database
+*.sqlite
+*.db
+
+# Uploads
+uploads/
+public/uploads/
+
+# IDE specific files
+.vscode/settings.json
+.idea/workspace.xml
+
+# OS specific
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+
+# Misc
+.cache/
+.parcel-cache/
