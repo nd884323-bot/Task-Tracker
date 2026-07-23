@@ -1,0 +1,73 @@
+{
+  "appName": "Daily Habit Tracker",
+  "version": "1.0.0",
+  "author": "nd884323-bot",
+  "description": "A beautiful web-based daily habit tracker with analytics",
+  "theme": {
+    "primary": "#00d4ff",
+    "secondary": "#1a1a1a",
+    "accent": "#00a8cc",
+    "success": "#00ff88",
+    "warning": "#ffaa00",
+    "danger": "#ff4444"
+  },
+  "defaultHabits": [
+    {
+      "name": "Deep Work",
+      "emoji": "💪",
+      "goal": 1
+    },
+    {
+      "name": "Wake up early",
+      "emoji": "🌅",
+      "goal": 1
+    },
+    {
+      "name": "No Alcohol",
+      "emoji": "🍷",
+      "goal": 1
+    },
+    {
+      "name": "Cold Shower",
+      "emoji": "❄️",
+      "goal": 1
+    },
+    {
+      "name": "Gym",
+      "emoji": "🏋️",
+      "goal": 1
+    },
+    {
+      "name": "Time with God",
+      "emoji": "🙏",
+      "goal": 1
+    },
+    {
+      "name": "Goal tracking",
+      "emoji": "📋",
+      "goal": 1
+    },
+    {
+      "name": "Budget tracking",
+      "emoji": "💰",
+      "goal": 1
+    },
+    {
+      "name": "Reading/Meditating",
+      "emoji": "📚",
+      "goal": 1
+    },
+    {
+      "name": "No Porn",
+      "emoji": "🚫",
+      "goal": 1
+    }
+  ],
+  "features": {
+    "enableCharts": true,
+    "enableStreak": true,
+    "enableArchive": false,
+    "enableExport": false,
+    "enableNotifications": false
+  }
+}
