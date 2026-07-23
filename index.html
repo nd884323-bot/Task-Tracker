@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Habit Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>📊 Habit Tracker</h1>
+            <div class="header-stats">
+                <div class="stat-card">
+                    <span class="stat-label">Today's Completion</span>
+                    <span class="stat-value" id="todayCompletion">0%</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">This Week</span>
+                    <span class="stat-value" id="weekCompletion">0%</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Current Streak</span>
+                    <span class="stat-value" id="currentStreak">0</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Date Navigation -->
+        <div class="date-nav">
+            <button id="prevBtn" class="nav-btn">← Previous</button>
+            <span id="currentDate" class="current-date"></span>
+            <button id="nextBtn" class="nav-btn">Next →</button>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Daily Routines Section -->
+            <section class="section daily-section">
+                <h2>Daily Routines</h2>
+                <div class="habits-grid" id="habitsContainer"></div>
+                <button class="btn btn-primary" id="addHabitBtn">+ Add New Habit</button>
+            </section>
+
+            <!-- Weekly Overview -->
+            <section class="section weekly-section">
+                <h2>Weekly Overview</h2>
+                <div class="calendar-grid" id="weeklyGrid"></div>
+            </section>
+
+            <!-- Charts Section -->
+            <section class="section charts-section">
+                <div class="chart-container">
+                    <h3>Weekly Trend</h3>
+                    <canvas id="trendChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Habit Distribution</h3>
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </section>
+
+            <!-- Top Habits -->
+            <section class="section top-habits-section">
+                <h2>Top Habits (This Month)</h2>
+                <div id="topHabitsContainer" class="top-habits-list"></div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Add Habit Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Add New Habit</h2>
+            <form id="habitForm">
+                <input 
+                    type="text" 
+                    id="habitName" 
+                    placeholder="Habit name (e.g., Deep Work, Wake up early)"
+                    required
+                >
+                <input 
+                    type="text" 
+                    id="habitEmoji" 
+                    placeholder="Emoji (e.g., 💪, 🏃)"
+                    maxlength="2"
+                >
+                <input 
+                    type="number" 
+                    id="habitGoal" 
+                    placeholder="Daily goal (optional, default: 1)"
+                    min="1"
+                    value="1"
+                >
+                <button type="submit" class="btn btn-primary">Create Habit</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
