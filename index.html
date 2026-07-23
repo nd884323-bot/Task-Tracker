@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Habit Tracker</title>
+    <title>Daily Habit Tracker - Spreadsheet</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -12,62 +12,69 @@
         <!-- Header -->
         <header class="header">
             <h1>📊 Habit Tracker</h1>
-            <div class="header-stats">
-                <div class="stat-card">
-                    <span class="stat-label">Today's Completion</span>
-                    <span class="stat-value" id="todayCompletion">0%</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">This Week</span>
-                    <span class="stat-value" id="weekCompletion">0%</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">Current Streak</span>
-                    <span class="stat-value" id="currentStreak">0</span>
-                </div>
+            <div class="month-selector">
+                <button id="prevMonth" class="month-btn">←</button>
+                <span id="monthYear" class="month-display"></span>
+                <button id="nextMonth" class="month-btn">→</button>
             </div>
         </header>
 
-        <!-- Date Navigation -->
-        <div class="date-nav">
-            <button id="prevBtn" class="nav-btn">← Previous</button>
-            <span id="currentDate" class="current-date"></span>
-            <button id="nextBtn" class="nav-btn">Next →</button>
+        <!-- Main Spreadsheet -->
+        <div class="spreadsheet-wrapper">
+            <div class="table-container">
+                <table class="habits-table">
+                    <thead>
+                        <tr>
+                            <th class="habit-name-col">Habit</th>
+                            <th class="goal-col">Goal</th>
+                            <th id="daysHeader"></th>
+                            <th class="percentage-col">%</th>
+                        </tr>
+                    </thead>
+                    <tbody id="habitsTableBody"></tbody>
+                </table>
+            </div>
         </div>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Daily Routines Section -->
-            <section class="section daily-section">
-                <h2>Daily Routines</h2>
-                <div class="habits-grid" id="habitsContainer"></div>
-                <button class="btn btn-primary" id="addHabitBtn">+ Add New Habit</button>
-            </section>
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat">
+                <span class="stat-label">Month Completion</span>
+                <span class="stat-value" id="monthCompletion">0%</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Days Tracked</span>
+                <span class="stat-value" id="daysTracked">0/31</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Current Streak</span>
+                <span class="stat-value" id="currentStreak">0</span>
+            </div>
+        </div>
 
-            <!-- Weekly Overview -->
-            <section class="section weekly-section">
-                <h2>Weekly Overview</h2>
-                <div class="calendar-grid" id="weeklyGrid"></div>
-            </section>
+        <!-- Controls -->
+        <div class="controls">
+            <button class="btn btn-primary" id="addHabitBtn">+ Add Habit</button>
+            <button class="btn btn-secondary" id="exportBtn">📥 Export Data</button>
+        </div>
 
-            <!-- Charts Section -->
-            <section class="section charts-section">
-                <div class="chart-container">
-                    <h3>Weekly Trend</h3>
-                    <canvas id="trendChart"></canvas>
-                </div>
-                <div class="chart-container">
-                    <h3>Habit Distribution</h3>
-                    <canvas id="distributionChart"></canvas>
-                </div>
-            </section>
+        <!-- Charts Section -->
+        <section class="charts-section">
+            <div class="chart-container">
+                <h3>Monthly Trend</h3>
+                <canvas id="trendChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>Top Habits</h3>
+                <canvas id="topHabitsChart"></canvas>
+            </div>
+        </section>
 
-            <!-- Top Habits -->
-            <section class="section top-habits-section">
-                <h2>Top Habits (This Month)</h2>
-                <div id="topHabitsContainer" class="top-habits-list"></div>
-            </section>
-        </main>
+        <!-- Top Habits Ranking -->
+        <section class="top-habits-section">
+            <h2>Top 10 Daily Habits</h2>
+            <div id="topHabitsList" class="top-habits-list"></div>
+        </section>
     </div>
 
     <!-- Add Habit Modal -->
@@ -79,23 +86,23 @@
                 <input 
                     type="text" 
                     id="habitName" 
-                    placeholder="Habit name (e.g., Deep Work, Wake up early)"
+                    placeholder="Habit name"
                     required
                 >
                 <input 
                     type="text" 
                     id="habitEmoji" 
-                    placeholder="Emoji (e.g., 💪, 🏃)"
+                    placeholder="Emoji (e.g., 💪)"
                     maxlength="2"
                 >
                 <input 
                     type="number" 
                     id="habitGoal" 
-                    placeholder="Daily goal (optional, default: 1)"
+                    placeholder="Daily goal"
                     min="1"
                     value="1"
                 >
-                <button type="submit" class="btn btn-primary">Create Habit</button>
+                <button type="submit" class="btn btn-primary">Create</button>
             </form>
         </div>
     </div>
