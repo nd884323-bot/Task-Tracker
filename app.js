@@ -1,4 +1,4 @@
-// Habit Tracker Application
+// Habit Tracker - Spreadsheet Style
 class HabitTracker {
     constructor() {
         this.habits = [];
@@ -15,12 +15,15 @@ class HabitTracker {
     }
 
     setupEventListeners() {
-        // Date navigation
-        document.getElementById('prevBtn').addEventListener('click', () => this.previousDay());
-        document.getElementById('nextBtn').addEventListener('click', () => this.nextDay());
+        // Month navigation
+        document.getElementById('prevMonth').addEventListener('click', () => this.previousMonth());
+        document.getElementById('nextMonth').addEventListener('click', () => this.nextMonth());
 
         // Add habit button
         document.getElementById('addHabitBtn').addEventListener('click', () => this.openModal());
+
+        // Export button
+        document.getElementById('exportBtn').addEventListener('click', () => this.exportData());
 
         // Modal
         const modal = document.getElementById('modal');
@@ -44,7 +47,7 @@ class HabitTracker {
             this.habits = data.habits || [];
             this.trackedDays = data.trackedDays || {};
         } else {
-            // Add default habits for demo
+            // Default habits
             this.habits = [
                 { id: 1, name: 'Deep Work', emoji: '💪', goal: 1 },
                 { id: 2, name: 'Wake up early', emoji: '🌅', goal: 1 },
@@ -96,7 +99,7 @@ class HabitTracker {
     }
 
     deleteHabit(id) {
-        if (confirm('Are you sure you want to delete this habit?')) {
+        if (confirm('Delete this habit?')) {
             this.habits = this.habits.filter(h => h.id !== id);
             this.saveToStorage();
             this.render();
@@ -104,24 +107,14 @@ class HabitTracker {
         }
     }
 
-    toggleHabit(habitId) {
-        const dateStr = this.getDateString(this.currentDate);
-        const key = `${dateStr}_${habitId}`;
-
-        if (!this.trackedDays[key]) {
-            this.trackedDays[key] = 1;
-        } else {
-            this.trackedDays[key]++;
-        }
-
-        const habit = this.habits.find(h => h.id === habitId);
-        if (this.trackedDays[key] > habit.goal) {
-            delete this.trackedDays[key];
-        }
-
-        this.saveToStorage();
+    previousMonth() {
+        this.currentDate.setMonth(this.currentDate.getMonth() - 1);
         this.render();
-        this.updateCharts();
+    }
+
+    nextMonth() {
+        this.currentDate.setMonth(this.currentDate.getMonth() + 1);
+        this.render();
     }
 
     getDateString(date) {
@@ -131,146 +124,156 @@ class HabitTracker {
         return `${year}-${month}-${day}`;
     }
 
-    previousDay() {
-        this.currentDate.setDate(this.currentDate.getDate() - 1);
-        this.render();
+    getDaysInMonth(date) {
+        return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
     }
 
-    nextDay() {
-        this.currentDate.setDate(this.currentDate.getDate() + 1);
+    getMonthStart(date) {
+        return new Date(date.getFullYear(), date.getMonth(), 1);
+    }
+
+    toggleHabit(habitId, day) {
+        const date = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), day);
+        const dateStr = this.getDateString(date);
+        const key = `${dateStr}_${habitId}`;
+
+        if (!this.trackedDays[key]) {
+            this.trackedDays[key] = 1;
+        } else {
+            const habit = this.habits.find(h => h.id === habitId);
+            if (this.trackedDays[key] >= habit.goal) {
+                delete this.trackedDays[key];
+            } else {
+                this.trackedDays[key]++;
+            }
+        }
+
+        this.saveToStorage();
         this.render();
+        this.updateCharts();
     }
 
     render() {
-        this.renderDateDisplay();
-        this.renderHabits();
-        this.renderWeekly();
+        this.renderMonthDisplay();
+        this.renderTable();
         this.updateStats();
         this.renderTopHabits();
     }
 
-    renderDateDisplay() {
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        const dateStr = this.currentDate.toLocaleDateString('en-US', options);
-        document.getElementById('currentDate').textContent = dateStr;
+    renderMonthDisplay() {
+        const monthYear = this.currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        document.getElementById('monthYear').textContent = monthYear;
     }
 
-    renderHabits() {
-        const container = document.getElementById('habitsContainer');
-        container.innerHTML = '';
+    renderTable() {
+        const daysInMonth = this.getDaysInMonth(this.currentDate);
+        const tbody = document.getElementById('habitsTableBody');
+        const daysHeader = document.getElementById('daysHeader');
+        
+        tbody.innerHTML = '';
+        daysHeader.innerHTML = '';
 
-        const dateStr = this.getDateString(this.currentDate);
-
-        this.habits.forEach(habit => {
-            const key = `${dateStr}_${habit.id}`;
-            const completed = this.trackedDays[key] || 0;
-            const isCompleted = completed >= habit.goal;
-
-            const card = document.createElement('div');
-            card.className = `habit-card ${isCompleted ? 'completed' : ''}`;
-
-            const header = document.createElement('div');
-            header.className = 'habit-header';
-            header.innerHTML = `
-                <div class="habit-name">
-                    <span>${habit.emoji}</span>
-                    <span>${habit.name}</span>
-                </div>
-                <button class="habit-delete" onclick="tracker.deleteHabit(${habit.id})">×</button>
-            `;
-
-            const progress = document.createElement('div');
-            progress.className = 'habit-progress';
-            progress.textContent = `${completed}/${habit.goal}`;
-
-            const checkbox = document.createElement('button');
-            checkbox.className = `habit-checkbox ${isCompleted ? 'checked' : ''}`;
-            checkbox.textContent = isCompleted ? '✓ Done' : 'Mark Done';
-            checkbox.onclick = () => this.toggleHabit(habit.id);
-
-            card.appendChild(header);
-            card.appendChild(progress);
-            card.appendChild(checkbox);
-            container.appendChild(card);
-        });
-    }
-
-    renderWeekly() {
-        const container = document.getElementById('weeklyGrid');
-        container.innerHTML = '';
-
-        // Add day headers
-        const dayHeaders = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-        dayHeaders.forEach(day => {
-            const header = document.createElement('div');
-            header.className = 'day-header';
-            header.textContent = day;
-            container.appendChild(header);
-        });
-
-        // Get this week's dates
-        const today = new Date(this.currentDate);
-        const monday = new Date(today);
-        monday.setDate(today.getDate() - today.getDay() + 1);
-
-        for (let i = 0; i < 7; i++) {
-            const date = new Date(monday);
-            date.setDate(monday.getDate() + i);
-            const dateStr = this.getDateString(date);
-
-            const completion = this.calculateDayCompletion(dateStr);
-            const cell = document.createElement('div');
-            cell.className = 'day-cell';
-
-            const dateEl = document.createElement('div');
-            dateEl.className = 'day-date';
-            dateEl.textContent = date.getDate();
-
-            const completionEl = document.createElement('div');
-            completionEl.className = 'day-completion';
-            completionEl.textContent = `${completion}%`;
-
-            cell.appendChild(dateEl);
-            cell.appendChild(completionEl);
-            container.appendChild(cell);
+        // Generate day headers
+        for (let day = 1; day <= daysInMonth; day++) {
+            const th = document.createElement('th');
+            th.className = 'day-header';
+            th.textContent = day;
+            th.style.minWidth = '45px';
+            daysHeader.appendChild(th);
         }
+
+        // Generate habit rows
+        this.habits.forEach(habit => {
+            const row = document.createElement('tr');
+            
+            // Habit name cell
+            const nameCell = document.createElement('td');
+            nameCell.className = 'habit-name-col';
+            nameCell.innerHTML = `<div class="habit-name">
+                <span>${habit.emoji}</span>
+                <span>${habit.name}</span>
+                <button class="habit-delete-btn" onclick="tracker.deleteHabit(${habit.id})">×</button>
+            </div>`;
+            row.appendChild(nameCell);
+
+            // Goal cell
+            const goalCell = document.createElement('td');
+            goalCell.className = 'goal-col';
+            goalCell.textContent = habit.goal;
+            row.appendChild(goalCell);
+
+            // Daily checkboxes
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), day);
+                const dateStr = this.getDateString(date);
+                const key = `${dateStr}_${habit.id}`;
+                const completed = this.trackedDays[key] || 0;
+                const isCompleted = completed >= habit.goal;
+
+                const dayCell = document.createElement('td');
+                dayCell.style.minWidth = '45px';
+                const checkbox = document.createElement('button');
+                checkbox.className = `habit-checkbox ${isCompleted ? 'checked' : ''}`;
+                checkbox.textContent = isCompleted ? '✓' : '';
+                checkbox.onclick = () => this.toggleHabit(habit.id, day);
+                dayCell.appendChild(checkbox);
+                row.appendChild(dayCell);
+            }
+
+            // Percentage cell
+            const percentageCell = document.createElement('td');
+            percentageCell.className = 'percentage-col';
+            const percentage = this.calculateHabitPercentage(habit.id);
+            percentageCell.innerHTML = `<span class="percentage">${percentage}%</span>`;
+            row.appendChild(percentageCell);
+
+            tbody.appendChild(row);
+        });
     }
 
-    calculateDayCompletion(dateStr) {
-        if (this.habits.length === 0) return 0;
-
+    calculateHabitPercentage(habitId) {
+        const daysInMonth = this.getDaysInMonth(this.currentDate);
         let completed = 0;
-        this.habits.forEach(habit => {
-            const key = `${dateStr}_${habit.id}`;
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const date = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), day);
+            const dateStr = this.getDateString(date);
+            const key = `${dateStr}_${habitId}`;
+            const habit = this.habits.find(h => h.id === habitId);
             if (this.trackedDays[key] >= habit.goal) {
                 completed++;
             }
-        });
+        }
 
-        return Math.round((completed / this.habits.length) * 100);
+        return Math.round((completed / daysInMonth) * 100);
     }
 
-    updateStats() {
-        const today = this.getDateString(new Date());
-        const todayCompletion = this.calculateDayCompletion(today);
+    calculateMonthCompletion() {
+        if (this.habits.length === 0) return 0;
+        let total = 0;
+        this.habits.forEach(habit => {
+            total += this.calculateHabitPercentage(habit.id);
+        });
+        return Math.round(total / this.habits.length);
+    }
 
-        // Weekly completion
-        const monday = new Date();
-        monday.setDate(new Date().getDate() - new Date().getDay() + 1);
-        let weekTotal = 0;
-        for (let i = 0; i < 7; i++) {
-            const date = new Date(monday);
-            date.setDate(monday.getDate() + i);
-            weekTotal += this.calculateDayCompletion(this.getDateString(date));
+    calculateDaysTracked() {
+        const daysInMonth = this.getDaysInMonth(this.currentDate);
+        let daysWithData = 0;
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const date = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), day);
+            const dateStr = this.getDateString(date);
+            
+            for (const key in this.trackedDays) {
+                if (key.startsWith(dateStr)) {
+                    daysWithData++;
+                    break;
+                }
+            }
         }
-        const weekCompletion = Math.round(weekTotal / 7);
 
-        // Current streak
-        const streak = this.calculateStreak();
-
-        document.getElementById('todayCompletion').textContent = `${todayCompletion}%`;
-        document.getElementById('weekCompletion').textContent = `${weekCompletion}%`;
-        document.getElementById('currentStreak').textContent = streak;
+        return `${daysWithData}/${daysInMonth}`;
     }
 
     calculateStreak() {
@@ -293,15 +296,44 @@ class HabitTracker {
         return streak;
     }
 
+    calculateDayCompletion(dateStr) {
+        if (this.habits.length === 0) return 0;
+        let completed = 0;
+
+        this.habits.forEach(habit => {
+            const key = `${dateStr}_${habit.id}`;
+            if (this.trackedDays[key] >= habit.goal) {
+                completed++;
+            }
+        });
+
+        return Math.round((completed / this.habits.length) * 100);
+    }
+
+    updateStats() {
+        const monthCompletion = this.calculateMonthCompletion();
+        const daysTracked = this.calculateDaysTracked();
+        const streak = this.calculateStreak();
+
+        document.getElementById('monthCompletion').textContent = `${monthCompletion}%`;
+        document.getElementById('daysTracked').textContent = daysTracked;
+        document.getElementById('currentStreak').textContent = streak;
+    }
+
     renderTopHabits() {
-        const container = document.getElementById('topHabitsContainer');
+        const container = document.getElementById('topHabitsList');
         container.innerHTML = '';
 
-        // Calculate monthly stats
-        const monthStats = this.calculateMonthlyStats();
-        const sorted = monthStats.sort((a, b) => b.percentage - a.percentage);
+        const stats = this.habits.map(habit => ({
+            id: habit.id,
+            name: habit.name,
+            emoji: habit.emoji,
+            percentage: this.calculateHabitPercentage(habit.id)
+        }));
 
-        sorted.slice(0, 10).forEach((stat, index) => {
+        stats.sort((a, b) => b.percentage - a.percentage);
+
+        stats.slice(0, 10).forEach((stat, index) => {
             const rank = document.createElement('div');
             rank.className = 'habit-rank';
 
@@ -309,62 +341,41 @@ class HabitTracker {
             rankNum.className = 'rank-number';
             rankNum.textContent = index + 1;
 
+            const info = document.createElement('div');
+            info.className = 'rank-info';
+
             const name = document.createElement('div');
             name.className = 'rank-name';
-            const habit = this.habits.find(h => h.id === stat.id);
-            name.innerHTML = `<span>${habit.emoji}</span> ${habit.name}`;
+            name.innerHTML = `<span>${stat.emoji}</span> ${stat.name}`;
 
             const percentage = document.createElement('div');
             percentage.className = 'rank-percentage';
             percentage.textContent = `${stat.percentage}%`;
 
+            info.appendChild(name);
+            info.appendChild(percentage);
             rank.appendChild(rankNum);
-            rank.appendChild(name);
-            rank.appendChild(percentage);
+            rank.appendChild(info);
             container.appendChild(rank);
         });
     }
 
-    calculateMonthlyStats() {
-        const stats = [];
-        const today = new Date();
-        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-        const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-
-        this.habits.forEach(habit => {
-            let completed = 0;
-            for (let day = 1; day <= daysInMonth; day++) {
-                const date = new Date(today.getFullYear(), today.getMonth(), day);
-                const dateStr = this.getDateString(date);
-                const key = `${dateStr}_${habit.id}`;
-                if (this.trackedDays[key] >= habit.goal) {
-                    completed++;
-                }
-            }
-            const percentage = Math.round((completed / daysInMonth) * 100);
-            stats.push({ id: habit.id, percentage });
-        });
-
-        return stats;
-    }
-
     updateCharts() {
         this.updateTrendChart();
-        this.updateDistributionChart();
+        this.updateTopHabitsChart();
     }
 
     updateTrendChart() {
         const ctx = document.getElementById('trendChart');
         if (!ctx) return;
 
+        const daysInMonth = this.getDaysInMonth(this.currentDate);
         const labels = [];
         const data = [];
-        const today = new Date();
 
-        for (let i = 6; i >= 0; i--) {
-            const date = new Date(today);
-            date.setDate(today.getDate() - i);
-            labels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+        for (let day = 1; day <= daysInMonth; day++) {
+            const date = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), day);
+            labels.push(day);
             data.push(this.calculateDayCompletion(this.getDateString(date)));
         }
 
@@ -377,7 +388,7 @@ class HabitTracker {
             data: {
                 labels,
                 datasets: [{
-                    label: 'Completion %',
+                    label: 'Daily Completion %',
                     data,
                     borderColor: '#00d4ff',
                     backgroundColor: 'rgba(0, 212, 255, 0.1)',
@@ -385,8 +396,8 @@ class HabitTracker {
                     fill: true,
                     pointBackgroundColor: '#00d4ff',
                     pointBorderColor: '#fff',
-                    pointRadius: 6,
-                    pointHoverRadius: 8
+                    pointRadius: 5,
+                    pointHoverRadius: 7
                 }]
             },
             options: {
@@ -411,25 +422,27 @@ class HabitTracker {
         });
     }
 
-    updateDistributionChart() {
-        const ctx = document.getElementById('distributionChart');
+    updateTopHabitsChart() {
+        const ctx = document.getElementById('topHabitsChart');
         if (!ctx) return;
 
-        const stats = this.calculateMonthlyStats();
+        const stats = this.habits.map(habit => ({
+            id: habit.id,
+            name: habit.name,
+            emoji: habit.emoji,
+            percentage: this.calculateHabitPercentage(habit.id)
+        }));
+
         const sorted = stats.sort((a, b) => b.percentage - a.percentage).slice(0, 10);
 
-        const labels = sorted.map(s => {
-            const habit = this.habits.find(h => h.id === s.id);
-            return `${habit.emoji} ${habit.name}`;
-        });
-
+        const labels = sorted.map(s => `${s.emoji} ${s.name}`);
         const data = sorted.map(s => s.percentage);
 
-        if (window.distributionChart) {
-            window.distributionChart.destroy();
+        if (window.topHabitsChart) {
+            window.topHabitsChart.destroy();
         }
 
-        window.distributionChart = new Chart(ctx, {
+        window.topHabitsChart = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels,
@@ -474,9 +487,39 @@ class HabitTracker {
             }
         });
     }
+
+    exportData() {
+        const csv = this.generateCSV();
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `habit-tracker-${this.getDateString(this.currentDate)}.csv`;
+        a.click();
+    }
+
+    generateCSV() {
+        const daysInMonth = this.getDaysInMonth(this.currentDate);
+        let csv = 'Habit,Goal,' + Array.from({length: daysInMonth}, (_, i) => i + 1).join(',') + ',Percentage\n';
+
+        this.habits.forEach(habit => {
+            let row = `${habit.name},${habit.goal}`;
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), day);
+                const dateStr = this.getDateString(date);
+                const key = `${dateStr}_${habit.id}`;
+                const completed = this.trackedDays[key] ? '✓' : '';
+                row += ',' + completed;
+            }
+            row += ',' + this.calculateHabitPercentage(habit.id) + '%';
+            csv += row + '\n';
+        });
+
+        return csv;
+    }
 }
 
-// Initialize tracker when DOM is loaded
+// Initialize
 let tracker;
 document.addEventListener('DOMContentLoaded', () => {
     tracker = new HabitTracker();
